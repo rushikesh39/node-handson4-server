@@ -1,30 +1,29 @@
-let arr=[];
-const jwt=require('jsonwebtoken');
-const bccrypt=require('bcrypt');
-const secretkey='@123';
-const saltround=10;
-const register=(req,res)=>{
-    const details=req.body;
-    const find=arr.find((item)=>details.email===item.email);
-    if(find){
-        return res.send({msg:'email already registered'});
+const jwt=require("jsonwebtoken")
+const secreatekey='@123'
+const auth=(req,res,next)=>{
+    const barerToken=req.headers["authorization"]
+    console.log("barerToken",barerToken)
+    if(barerToken){
+        const token=barerToken.split(" ")[1]
+        console.log("token ",token)
+        const validate=jwt.verify(token,secreatekey)
+        console.log("Validate",validate)
+        if(validate){
+            next()
+            
+        }
+        else{
+            return res.send({msg:"user not authorized"})
+            console.log("user Not authorised")
+        }
+       
     }
-    const hashpassword=bcrypt.hashSync(details.password, saltround);
-    const temp={
-        email:details.email,
-        password:hashpassword,
-    };
-    arr.push(temp);
-    const token=jwt.sign({email:details.email},secretkey,{expiresIn:""});
-    res.send({msg:'user is registered',result:arr, token});
-};
-const login=async(req,res)=>{
-    const details=req.body;
-    const find=arr.find((item)=>details.email=== item.email);
-    if(!find){
-        return res.statusCode(200).send({msg:"user not registerd"});
+    else{
+        console.log("user not allowed")
     }
-    const token=jwt.sign({email:details.email},secretkey);
-    return res.send({msg:'user is loged in successfully',token:token});
+    
+    // return res.send({msg:"user not allowed"})
+
+
 }
-module.exports={register,login}
+module.exports=auth

@@ -1,41 +1,45 @@
-let arr=[];
-const jwt=require('jsonwebtoken');
-const bcrypt=require('bcrypt');
-const secretkey='@123';
-const saltround=10;
-const register=(req,res)=>{
-    const details=req.body;
-    const find=arr.find((item)=>details.email===item.email);
-    if(find){
-        return res.send({msg:'registered'});
-    }
-    const hashpassword=bcrypt.hashSync(details.password, saltround);
-    const temp={
-        userName:details.userName,
-        mobile:details.mobile,
-        email:details.email,
-        password:hashpassword,
-    };
-    arr.push(temp);
-    const token=jwt.sign({email:details.email},secretkey,{expiresIn:"2m"});
-    res.send({msg:'user is registered',result:arr, token});
-    console.log(arr)
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const saltround = 8;
+const secreatekey = "@123";
+const arr = [];
+const register = (req, res) => {
+  const data = req.body;
+  console.log("register", data);
+  const user = arr.find((item) => item.email === data.email);
+  if (user) {
+    return res.send({ msg: "user is already exist" });
+  }
+  const hashpassword = bcrypt.hashSync(data.password, saltround);
+  const temp = {
+    name: data.name,
+    email: data.email,
+    mobile: data.mobile,
+    password: hashpassword,
+  };
+  arr.push(temp);
+  const token = jwt.sign({ email:data.email}, secreatekey,{expiresIn:"1m"});
+ return res.send({ msg: "user Register successfully", token: token});
+  console.log(arr);
 };
-const login=async(req,res)=>{
-    const details=req.body;
-    console.log(details)
-    const find=arr.find((item)=>details.email=== item.email);
-    if(!find){
-        return res.statusCode(200).send({msg:"user not registerd"});
+const login = (req, res) => {
+  const data = req.body;
+  console.log("login", data);
+  const user = arr.find((item) => item.email === data.email);
+  if (user) {
+    const password = bcrypt.compareSync(data.password, user.password);
+    if (password) {
+      const token = jwt.sign({ email: data.email }, secreatekey,{expiresIn:"1m"});
+      return res.send({ msg: "Success", token: token });
+    } else {
+      return res.send({ msg: "password is wrong" });
     }
-    const validate = await bcrypt.compare(details.password, find.password)
-    if(!validate){
-        return response.status(401).send({msg : 'password is wrong'})
-    }
-   
-    const token=jwt.sign({email:details.email},secretkey,{expiresIn:'5m'});
-    return res.send({msg:'user is loged in successfully',token:token});
-   
-}
-module.exports={register,login}
-
+  } else {
+    return res.send({ msg: "user Not exist" });
+  }
+  console.log(arr);
+};
+const home = (req, res) => {
+  res.send("Home page");
+};
+module.exports = { register, login, home };

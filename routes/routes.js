@@ -1,7 +1,11 @@
-const route=require("express").Router();
-const {register,login}=require("../controller/userController")
 
-route.post("/register",register)
-route.post("/login",login)
-route.get("/dashboard",)
-module.exports=route;
+const { register, login, home } = require("../controller/userController")
+const auth = require("../middleware/userAuth")
+
+const user=require("express").Router()
+
+user.post("/register",register)
+user.post("/login",login)
+user.get("/",auth,home)
+
+module.exports=user
